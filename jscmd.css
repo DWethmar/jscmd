@@ -1,0 +1,43 @@
+/* 
+    Document   : style
+    Created on : 16-okt-2014, 12:07:31
+    Author     : Dawg
+    Description:
+        Purpose of the stylesheet follows.
+*/
+
+.jscmd{
+    background-color: #000000;
+    min-width: 300px;
+    height: 600px;
+    max-height: 300px;
+    font-family: Consolas, Lucida Console;
+    word-break: break-all;
+    overflow-y: scroll;
+    padding-bottom: 10px;
+}
+
+.jscmd > .jscmd-inputMirror, .jscmd > .jscmd-label, .jscmd > .jscmd-log{
+    color: white
+}
+
+.jscmd input{
+    pointer-events: auto !important;
+}
+
+.jscmd > .jscmd-inputMirror span.input-position{
+    border-bottom: solid;
+    animation: blink steps(1) 1s infinite;
+    -webkit-animation: blink steps(1) 1s infinite;
+}
+
+@keyframes blink {
+    0%  { border-bottom: 4px solid white; }
+    50%  { border: none; }
+    100% { border-bottom: 4px solid white; }
+}
+@-webkit-keyframes blink {
+    0% { border-bottom: 4px solid white; }
+    50%  { border: none; }
+    100% { border-bottom: 4px solid white; }
+}
