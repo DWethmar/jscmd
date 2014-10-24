@@ -37,6 +37,7 @@
         this.defaults = {
             version: '1.0.0',
             namespace: 'jscmd',
+			location: 'J:\\>'
         };
 
         this.elements = {
@@ -74,14 +75,15 @@
             name: options.namespace + '-inputField',
             type: 'text',
             autocomplete: 'off',
-            unselectable: 'on',
+            unselectable : "off",
             onselectstart: 'return false;',
-            onmousedown: 'return false;'
+            onmousedown: 'return false;',
+			style: 'pointer-events: auto !important'
         }).css({
             '-moz-user-select': 'none',
             '-webkit-user-select': 'none',
             '-ms-user-select': 'none',
-            'user-select': 'none'
+            'user-select': 'none',
         });
         
         this.elements.CommandInputField.onfocus = function () {
@@ -92,7 +94,7 @@
         this.elements.form = $(document.createElement('form')).attr({
             method: 'GET'
         }).css({
-            position: 'absolute',
+            position: 'relative',
             left: '-9999px',
         }).append(this.elements.CommandInputField);
 
@@ -100,14 +102,14 @@
         this.elements.location = $(document.createElement('label')).attr({
             class: locationClass,
             for : CommandInputFieldClass
-        }).html("J:\\>");
+        }).html(options.location);
 
         var inputMirrorClass = options.namespace + '-inputMirror';
         this.elements.inputMirror = $(document.createElement('span')).attr({
             class: inputMirrorClass
         });
 
-        $(this.elements.CommandInputField).bind('keyup init', {plugin: this}, function(event) {
+        $(this.elements.CommandInputField).bind('keyup keydown init', {plugin: this}, function(event) {
             var plugin = event.data.plugin;
 
             var input = plugin.elements.CommandInputField;
@@ -151,8 +153,8 @@
             
             var plugin = event.data.plugin;
             var input = plugin.elements.CommandInputField;
-
-            if(window.getSelection().toString() !== ""){ //Prevent focusing when selecting text
+			var selection = window.getSelection().toString();
+            if(selection !== ""){ //Prevent focusing when selecting text
                 return;
             }
 

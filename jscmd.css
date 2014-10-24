@@ -1,9 +1,9 @@
 /* 
     Document   : style
     Created on : 16-okt-2014, 12:07:31
-    Author     : Dawg
+    Author     : Dennis Wethmar
     Description:
-        Purpose of the stylesheet follows.
+        Default styling of the command prompt
 */
 
 .jscmd{
@@ -19,10 +19,6 @@
 
 .jscmd > .jscmd-inputMirror, .jscmd > .jscmd-label, .jscmd > .jscmd-log{
     color: white
-}
-
-.jscmd input{
-    pointer-events: auto !important;
 }
 
 .jscmd > .jscmd-inputMirror span.input-position{

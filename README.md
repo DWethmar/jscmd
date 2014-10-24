@@ -1,4 +1,4 @@
 jscmd
 =====
 
-windows command prompt in javascript
+windows command prompt as an jquery plugin
