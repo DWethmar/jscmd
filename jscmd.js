@@ -1,8 +1,8 @@
 /*
- *  Project:
- *  Description:
- *  Author:
- *  License:
+ *  Project: jscmd
+ *  Description: Command prompt in javascript and jQuery
+ *  Author: Dennis Wethmar
+ *  License: MIT
  */
 
 // the semi-colon before function invocation is a safety net against concatenated
@@ -10,48 +10,35 @@
 ;
 (function($, window, document, undefined) {
 
-    // undefined is used here as the undefined global variable in ECMAScript 3 is
-    // mutable (ie. it can be changed by someone else). undefined isn't really being
-    // passed in so we can ensure the value of it is truly undefined. In ES5, undefined
-    // can no longer be modified.
-
-    // window is passed through as local variable rather than global
-    // as this (slightly) quickens the resolution process and can be more efficiently
-    // minified (especially when both are regularly referenced in your plugin).
-
     var // plugin name
             pluginName = "jscmd",
             // key using in $.data()
             dataKey = "plugin_" + pluginName;
-
-    var privateMethod = function() {
-        // ...
-        alert('Private function');
-    };
         
     function Plugin(element, options) {
         
-        element.append($(document.createElement('div')));
-        this.element = element.find('div');
+        element.append($(document.createElement("div")));
+        this.element = element.find("div");
 
-        this.defaults = {
-            version: '1.0.0',
-            namespace: 'jscmd',
-			location: 'J:\\>'
+        this.options = {
+            version: "1.0.0",
+            namespace: "jscmd",
+			disk: "J",
+            path: "\\"
         };
 
         this.elements = {
-            inputField: '',
-            form: '',
-            location: '',
-            inputMirror: ''
+            inputField: "",
+            form: "",
+            prompt: "",
+            inputMirror: ""
         };
         
         this.commandCollection = new Array();
         
-        $.extend(this.defaults, options);
+        $.extend(this.options, options);
 
-        this.init(this.defaults);
+        this.init(this.options);
     };
 
     // initialize options
@@ -61,95 +48,92 @@
         /*
          * Update plugin for options
          */
-        this.element.parent().addClass(options.namespace + '-container');
+        this.element.parent().addClass(options.namespace + "-container");
         this.element.addClass(options.namespace);
 
-        var logClass = options.namespace + '-log';
-        this.elements.log = $(document.createElement('div')).attr({
+        var logClass = options.namespace + "-log";
+        this.elements.log = $(document.createElement("div")).attr({
             class: logClass
         });
 
-        var CommandInputFieldClass = options.namespace + '-inputField';
-        this.elements.CommandInputField = $(document.createElement('input')).attr({
+        var CommandInputFieldClass = options.namespace + "-inputField";
+        this.elements.CommandInputField = $(document.createElement("input")).attr({
             class: CommandInputFieldClass,
-            name: options.namespace + '-inputField',
-            type: 'text',
-            autocomplete: 'off',
+            name: options.namespace + "-inputField",
+            type: "text",
+            autocomplete: "off",
             unselectable : "off",
-            onselectstart: 'return false;',
-            onmousedown: 'return false;',
-			style: 'pointer-events: auto !important'
+            onselectstart: "return false;",
+            onmousedown: "return false;",
+			style: "pointer-events: auto !important"
         }).css({
-            '-moz-user-select': 'none',
-            '-webkit-user-select': 'none',
-            '-ms-user-select': 'none',
-            'user-select': 'none',
+            "-moz-user-select": "none",
+            "-webkit-user-select": "none",
+            "-ms-user-select": "none",
+            "user-select": "none",
         });
         
-        this.elements.CommandInputField.onfocus = function () {
-            window.scrollTo(0, 0);
-            document.body.scrollTop = 0;
-        }
-
-        this.elements.form = $(document.createElement('form')).attr({
-            method: 'GET'
+        this.elements.form = $(document.createElement("form")).attr({
+            method: "GET"
         }).css({
-            position: 'relative',
-            left: '-9999px',
+            position: "relative",
+            left: "-9999px",
         }).append(this.elements.CommandInputField);
 
-        var locationClass = options.namespace + '-label';
-        this.elements.location = $(document.createElement('label')).attr({
-            class: locationClass,
+        var promptClass = options.namespace + "-prompt";
+        this.elements.prompt = $(document.createElement("label")).attr({
+            class: promptClass,
             for : CommandInputFieldClass
-        }).html(options.location);
+        }).html(this.getPath());
 
-        var inputMirrorClass = options.namespace + '-inputMirror';
-        this.elements.inputMirror = $(document.createElement('span')).attr({
+        var inputMirrorClass = options.namespace + "-inputMirror";
+        this.elements.inputMirror = $(document.createElement("span")).attr({
             class: inputMirrorClass
         });
 
-        $(this.elements.CommandInputField).bind('keyup keydown init', {plugin: this}, function(event) {
+        $(this.elements.CommandInputField).bind("keyup keydown init", {plugin: this}, function(event) {
             var plugin = event.data.plugin;
 
             var input = plugin.elements.CommandInputField;
             var inputValue = input.val();
             var inputPosition = input[0].selectionStart;
 
-            var mirrorInput = '';
+            var mirrorInput = "";
             for (var i = 0; i < inputValue.length; i++)
             {
-                if (inputValue.charAt(i) === ' ') {
-                    mirrorInput += '<span>&nbsp;</span>';
+                if (inputValue.charAt(i) === " ") {
+                    mirrorInput += "<span>&nbsp;</span>";
                 } else {
-                    mirrorInput += '<span>' + inputValue.charAt(i) + '</span>';
+                    mirrorInput += "<span>" + inputValue.charAt(i) + "</span>";
                 }
             }
             
             plugin.elements.inputMirror.html(mirrorInput);
             if (inputPosition <= inputValue.length) {
-                plugin.elements.inputMirror.append($('<span>&nbsp;</span>'));
-                plugin.elements.inputMirror.find("span:eq(" + inputPosition + ")").addClass('input-position');
-            } else {
-                plugin.elements.inputMirror.find("span:eq(" + inputPosition - 1 + ")").addClass('input-position');
+                plugin.elements.inputMirror.append($("<span>&nbsp;</span>"));
+                plugin.elements.inputMirror.find("span:eq(" + inputPosition + ")").addClass("input-position");
             }
         });
 
-        $(this.elements.form).bind('submit', {plugin: this}, function(event) {
+        $(this.elements.form).bind("submit", {plugin: this}, function(event) {
             event.preventDefault();
             var plugin = event.data.plugin;
             var input = plugin.elements.CommandInputField.val();
-            plugin.elements.CommandInputField.val('');
+            plugin.elements.CommandInputField.val("");
             plugin.elements.inputMirror.empty();
-            var location = plugin.elements.location.html();
-            plugin.addLogEntry(location + input);
+            
+            var path = $("<div>").append( //Put the path in a span so we can style it
+                $("<span>").addClass("prompt").html(plugin.getPath())
+            ).append(">").html();
+            
+            plugin.addLogEntry(path + input);
             plugin.execute(input);
             
             //Auto scroll
             plugin.element[0].scrollTop = plugin.element[0].scrollHeight;
         });
         
-        $(this.element).bind('click', {plugin: this}, function(event) {
+        $(this.element).bind("click", {plugin: this}, function(event) {
             
             var plugin = event.data.plugin;
             var input = plugin.elements.CommandInputField;
@@ -164,55 +148,49 @@
         });
         
         //To make that thingy blink
-        $(this.elements.CommandInputField).trigger('init');
-        this.element.append(this.elements.log, this.elements.location, this.elements.inputMirror, this.elements.form);
+        $(this.elements.CommandInputField).trigger("init");
+        this.element.append(this.elements.log, this.elements.prompt, this.elements.inputMirror, this.elements.form);
         
-        //help function
-        this.registerCommand("help", "Overview of available commands", function(jscmd, params){
-
-            var maxfunctionNameLenght = 20;
-            $.each( jscmd.commandCollection, function( key, value ) {
-                
-                var paddingRight = '';
-                var name = value.name.substring(0, maxfunctionNameLenght);
-                var m = Math.abs(name.length - maxfunctionNameLenght);
-                for(var x = 0; x <= m; x++){
-                    paddingRight += "&nbsp;";
-                }
-                jscmd.addLogEntry(name + paddingRight + value.decription);
-            });    
-            return true;
-         });
-        
-        //Welcome text
-        //this.addLogEntry('&#9617;&#9608;&#9733; JSCMD &#9733;&#9608;&#9617;');
-        this.addLogEntry('JSCMD [Version: ' + options.version + ']');
-        this.addLogEntry('(c) 2014 Dennis Wethmar. &#9733;');
+        this.addLogEntry("Jscmd [Version: " + options.version + "]");
+        this.addLogEntry("(c) 2014 Dennis Wethmar. &#9733;");
         this.addLogEntry("&nbsp;");
     };
 
-    Plugin.prototype.addLogEntry = function(t) {
-        this.elements.log.append($(document.createElement('div')).attr({class: 'log'}).html(t));
+    Plugin.prototype.addLogEntry = function(log) {
+        this.elements.log.append($(document.createElement("div")).attr({class: "log-entry"}).html(log));
     };
     
     Plugin.prototype.registerCommand = function(name, description, logic) {
         this.commandCollection.push(new Command(name, description, logic));
     };
     
-    Plugin.prototype.execute = function(c) {
+    Plugin.prototype.getPath = function(){
+        return this.options.disk + ":" + ( this.options.path === "" ? "\\" : this.options.path);
+    };
+    
+    Plugin.prototype.setPath = function(path){
+        var pieces = path.split(':', 2);
+        var disk  = pieces[0];
+        var path  = pieces[1];
+        this.options.disk = disk;
+        this.options.path = path;
+        this.elements.prompt.html(this.getPath());
+    };
+    
+    Plugin.prototype.execute = function(command) {
         
-        var params = c.match(/(".*?"|[^"\s]+)+(?=\s*|\s*$)/g);
+        var params = command.match(/(".*?"|[^"\s]+)+(?=\s*|\s*$)/g);
         if(params === null || params.length === 0){
             params = new Array();
         }
         var commandName = params.shift();
         
-        if(typeof commandName === 'undefined'){
+        if(typeof commandName === "undefined"){
             return;
         }
         
 		$.each( params, function( key, value ) { // remove outer qoutes of params
-			if (value.charAt(0) === '"' && value.charAt(value.length -1) === '"')
+			if (value.charAt(0) === "\"" && value.charAt(value.length -1) === "\"")
 			{
 				params[key] = value.substr(1,value.length -2);
 			}
@@ -224,17 +202,29 @@
         
         if(result.length > 0){
             var command = result[0];
-            var done = command.logic(this, params);
-            if(typeof done !== 'undefined' && done === true){ 
-                 this.executionFinished();
+            var keepFocus = false;
+            try{
+                keepFocus = command.logic(this, params);
+            }catch(e){
+                var stack = e.stack.split("\n");
+                for(var i = 0; i < stack.length; i++){
+                    this.addLogEntry(stack[i]);
+                }
+                keepFocus = true;
+            }finally{
+                if(typeof keepFocus === "undefined" || keepFocus === false){ 
+                    this.executionFinished();
+                }
             }
+
         }else{
-            this.addLogEntry("'" + commandName + "' is not recognized as an internal or external command");
+            this.addLogEntry("'" + commandName + "' is not recognized as an internal or external command.");
             this.addLogEntry("&nbsp;");
         }
     };
     
     Plugin.prototype.executionFinished = function(){
+        this.setPath(this.getPath());
         this.addLogEntry("&nbsp;");
     };
     
@@ -255,7 +245,7 @@
         // has plugin instantiated ?
         if (plugin instanceof Plugin) {
             // if have options arguments, call plugin.init() again
-            if (typeof options !== 'undefined') {
+            if (typeof options !== "undefined") {
                 plugin.init(options);
             }
         } else {
