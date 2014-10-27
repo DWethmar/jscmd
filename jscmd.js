@@ -1,3 +1,10 @@
+//     ___  _____  _____ ___  _________ 
+//    |_  |/  ___|/  __ \|  \/  ||  _  \
+//      | |\ `--. | /  \/| .  . || | | |
+//      | | `--. \| |    | |\/| || | | |
+//  /\__/ //\__/ /| \__/\| |  | || |/ / 
+//  \____/ \____/  \____/\_|  |_/|___/  
+//                                      
 /*
  *  Project: jscmd
  *  Description: Command prompt in javascript and jQuery
@@ -21,7 +28,7 @@
         this.element = element.find("div");
 
         this.options = {
-            version: "1.0.0",
+            version: "1.0.2",
             namespace: "jscmd",
 			disk: "J",
             path: "\\"
