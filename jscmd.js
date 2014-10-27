@@ -159,7 +159,7 @@
         this.element.append(this.elements.log, this.elements.prompt, this.elements.inputMirror, this.elements.form);
         
         this.addLogEntry("Jscmd [Version: " + options.version + "]");
-        this.addLogEntry("(c) 2014 Dennis Wethmar. &#9733;");
+        //this.addLogEntry("(c) 2014 Dennis Wethmar. &#9733;");
         this.addLogEntry("&nbsp;");
     };
 
