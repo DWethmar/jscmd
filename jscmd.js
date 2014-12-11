@@ -27,7 +27,7 @@
         this.element = element.find("div");
 
         this.options = {
-            version: "1.0.2",
+            version: "1.0.3",
             namespace: "jscmd",
 			disk: "J",
             path: "\\"
@@ -130,25 +130,23 @@
             plugin.elements.CommandInputField.val("");
             plugin.elements.inputMirror.empty();
             
-			if(input != ""){
+			if(input != "" && input != plugin.commandHistory[0]){
 				plugin.commandHistory.unshift(input); //Add new entry to the history
 			}
 			
             var path = $("<div>").append( //Put the path in a span so we can style it
-                $("<span>").addClass("prompt").html(plugin.getPath())
-            ).append(">").html();
+                $("<span>").addClass("prompt").html(plugin.getPath() + ">")
+            ).html();
             
             plugin.addLogEntry(path + input);
             plugin.execute(input);
             
             //Auto scroll
             plugin.element[0].scrollTop = plugin.element[0].scrollHeight;
-			
         });
 		
 		$(this.elements.CommandInputField).bind("keydown", {plugin: this}, function(event) { //Command playback listener
-			
-			event.preventDefault(); // prevent the default action
+		
 			var plugin = event.data.plugin;
 			var historyLenght = plugin.commandHistory.length;
 			var currentIndex = plugin.commandPlaybackIndex;
@@ -172,7 +170,9 @@
 				break;
 				default: return; // exit this handler for other keys
 			}
+			
 			plugin.elements.CommandInputField.val(plugin.commandHistory[currentIndex]);
+			event.preventDefault(); // prevent the default action (scroll / move caret)
 		});
         
         $(this.element).bind("click", {plugin: this}, function(event) {
@@ -191,7 +191,7 @@
         $(this.elements.CommandInputField).trigger("init");
         this.element.append(this.elements.log, this.elements.prompt, this.elements.inputMirror, this.elements.form);
         
-        this.addLogEntry("Jscmd [Version: " + options.version + "]");
+        this.addLogEntry(this.options.namespace + " [version: " + this.options.version + "]");
         this.addLogEntry("(c) 2014 Dennis Wethmar. &#9733;");
         this.addLogEntry("&nbsp;");
     };

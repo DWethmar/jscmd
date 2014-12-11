@@ -24,7 +24,7 @@ function loadCommands(jscmd){
      });
      
     //Welcome!
-    jscmd.registerCommand("cd", "Display the name of or changes the currrent directory.", function(jscmd, params){
+    jscmd.registerCommand("cd", "Display the name of or changes the current directory.", function(jscmd, params){
         
         var relativePathParts = new Array();
         var currentPathParts = new Array(); 
@@ -54,7 +54,7 @@ function loadCommands(jscmd){
         jscmd.setPath(currentPathParts.join("\\"));
     });
 	
-	var commandTimeDescription = "Display browser time";
+	var commandTimeDescription = "Display browser time.";
 	jscmd.registerCommand("time", commandTimeDescription, function(jscmd, params){
 		currentTime = new Date();
 		time = currentTime.getTime();
@@ -65,9 +65,13 @@ function loadCommands(jscmd){
         jscmd.addLogEntry("Current time: " + hours + ":" + minutes + ":" + seconds + ","+miliseconds);
     });
     
-    jscmd.registerCommand("hello", "hello world", function(jscmd, params){
+    jscmd.registerCommand("hello", "hello world.", function(jscmd, params){
         jscmd.addLogEntry("Hello world!");
         jscmd.addLogEntry("Your params: " + params.join(", "));
+    });
+	
+	jscmd.registerCommand("ver", "Display the JSCMD version", function(jscmd, params){
+        jscmd.addLogEntry(jscmd.options.namespace + " [version: " + jscmd.options.version + "]");
     });
     
     jscmd.registerCommand("rps", "Rock Paper Sciccors!", function(jscmd, params){
