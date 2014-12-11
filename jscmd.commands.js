@@ -53,6 +53,17 @@ function loadCommands(jscmd){
         }
         jscmd.setPath(currentPathParts.join("\\"));
     });
+	
+	var commandTimeDescription = "Display browser time";
+	jscmd.registerCommand("time", commandTimeDescription, function(jscmd, params){
+		currentTime = new Date();
+		time = currentTime.getTime();
+		hours = currentTime.getHours();
+		minutes = currentTime.getMinutes();
+		seconds = currentTime.getSeconds();
+		miliseconds = currentTime.getMilliseconds()
+        jscmd.addLogEntry("Current time: " + hours + ":" + minutes + ":" + seconds + ","+miliseconds);
+    });
     
     jscmd.registerCommand("hello", "hello world", function(jscmd, params){
         jscmd.addLogEntry("Hello world!");

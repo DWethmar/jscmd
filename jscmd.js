@@ -17,10 +17,9 @@
 ;
 (function($, window, document, undefined) {
 
-    var // plugin name
-            pluginName = "jscmd",
-            // key using in $.data()
-            dataKey = "plugin_" + pluginName;
+    var pluginName = "jscmd",
+	// key using in $.data()
+	dataKey = "plugin_" + pluginName;
         
     function Plugin(element, options) {
         
@@ -36,13 +35,16 @@
 
         this.elements = {
             inputField: "",
+			inputMirror: "",
             form: "",
-            prompt: "",
-            inputMirror: ""
+            prompt: ""
         };
         
         this.commandCollection = new Array();
-        
+		
+        this.commandHistory = new Array();
+        this.commandPlaybackIndex = 0;
+		
         $.extend(this.options, options);
 
         this.init(this.options);
@@ -100,7 +102,6 @@
 
         $(this.elements.CommandInputField).bind("keyup keydown init", {plugin: this}, function(event) {
             var plugin = event.data.plugin;
-
             var input = plugin.elements.CommandInputField;
             var inputValue = input.val();
             var inputPosition = input[0].selectionStart;
@@ -122,13 +123,17 @@
             }
         });
 
-        $(this.elements.form).bind("submit", {plugin: this}, function(event) {
+        $(this.elements.form).bind("submit", {plugin: this}, function(event) { //New input by user!
             event.preventDefault();
             var plugin = event.data.plugin;
             var input = plugin.elements.CommandInputField.val();
             plugin.elements.CommandInputField.val("");
             plugin.elements.inputMirror.empty();
             
+			if(input != ""){
+				plugin.commandHistory.unshift(input); //Add new entry to the history
+			}
+			
             var path = $("<div>").append( //Put the path in a span so we can style it
                 $("<span>").addClass("prompt").html(plugin.getPath())
             ).append(">").html();
@@ -138,17 +143,45 @@
             
             //Auto scroll
             plugin.element[0].scrollTop = plugin.element[0].scrollHeight;
+			
         });
+		
+		$(this.elements.CommandInputField).bind("keydown", {plugin: this}, function(event) { //Command playback listener
+			
+			event.preventDefault(); // prevent the default action
+			var plugin = event.data.plugin;
+			var historyLenght = plugin.commandHistory.length;
+			var currentIndex = plugin.commandPlaybackIndex;
+			
+			switch(event.which) {
+				case 38: // up
+					plugin.commandPlaybackIndex++;
+					if(plugin.commandPlaybackIndex >= historyLenght){
+						plugin.commandPlaybackIndex = historyLenght - 1;
+					}
+				break;
+				case 40: // down
+					plugin.commandPlaybackIndex--;
+					if(plugin.commandPlaybackIndex < 0){
+						plugin.commandPlaybackIndex = 0;
+					}
+				break;
+				case 13: // enter
+					plugin.commandPlaybackIndex = 0;
+					return; // exit this handler for other keys
+				break;
+				default: return; // exit this handler for other keys
+			}
+			plugin.elements.CommandInputField.val(plugin.commandHistory[currentIndex]);
+		});
         
         $(this.element).bind("click", {plugin: this}, function(event) {
-            
             var plugin = event.data.plugin;
             var input = plugin.elements.CommandInputField;
 			var selection = window.getSelection().toString();
             if(selection !== ""){ //Prevent focusing when selecting text
                 return;
             }
-
             var y = plugin.element[0].scrollTop; //prevent autoscrolling 
             input.focus();
             plugin.element[0].scrollTop = y;
@@ -159,7 +192,7 @@
         this.element.append(this.elements.log, this.elements.prompt, this.elements.inputMirror, this.elements.form);
         
         this.addLogEntry("Jscmd [Version: " + options.version + "]");
-        //this.addLogEntry("(c) 2014 Dennis Wethmar. &#9733;");
+        this.addLogEntry("(c) 2014 Dennis Wethmar. &#9733;");
         this.addLogEntry("&nbsp;");
     };
 
@@ -184,22 +217,22 @@
         this.elements.prompt.html(this.getPath());
     };
     
-    Plugin.prototype.execute = function(command) {
+    Plugin.prototype.execute = function(fullCommand) {
         
-        var params = command.match(/(".*?"|[^"\s]+)+(?=\s*|\s*$)/g);
-        if(params === null || params.length === 0){
-            params = new Array();
+        var parameters = fullCommand.match(/(".*?"|[^"\s]+)+(?=\s*|\s*$)/g); //Separated by a space or between "
+        if(parameters === null || parameters.length === 0){
+            parameters = new Array(); //No parameters found
         }
-        var commandName = params.shift();
+        var commandName = parameters.shift(); // Remove The command name from the parameters array
         
         if(typeof commandName === "undefined"){
             return;
         }
         
-		$.each( params, function( key, value ) { // remove outer qoutes of params
+		$.each( parameters, function( key, value ) { // remove outer qoutes of parameters
 			if (value.charAt(0) === "\"" && value.charAt(value.length -1) === "\"")
 			{
-				params[key] = value.substr(1,value.length -2);
+				parameters[key] = value.substr(1,value.length -2);
 			}
 		});
 		
@@ -210,8 +243,9 @@
         if(result.length > 0){
             var command = result[0];
             var keepFocus = false;
+			this.elements.inputMirror.prop('disabled', true);
             try{
-                keepFocus = command.logic(this, params);
+                keepFocus = command.logic(this, parameters);
             }catch(e){
                 var stack = e.stack.split("\n");
                 for(var i = 0; i < stack.length; i++){
@@ -223,7 +257,6 @@
                     this.executionFinished();
                 }
             }
-
         }else{
             this.addLogEntry("'" + commandName + "' is not recognized as an internal or external command.");
             this.addLogEntry("&nbsp;");
@@ -231,6 +264,7 @@
     };
     
     Plugin.prototype.executionFinished = function(){
+		this.elements.inputMirror.prop('disabled', false);
         this.setPath(this.getPath());
         this.addLogEntry("&nbsp;");
     };
