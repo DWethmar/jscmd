@@ -54,9 +54,6 @@
     Plugin.prototype.init = function(options) {
 
         this.element.empty();
-        /*
-         * Update plugin for options
-         */
         this.element.parent().addClass(options.namespace + "-container");
         this.element.addClass(options.namespace);
 
@@ -99,9 +96,9 @@
         this.elements.inputMirror = $(document.createElement("span")).attr({
             class: inputMirrorClass
         });
-
-        $(this.elements.CommandInputField).bind("keyup keydown init", {plugin: this}, function(event) {
-            var plugin = event.data.plugin;
+				
+        $(this.elements.CommandInputField).bind("keyup keydown init", {plugin: this}, function(event) { //Handle keyboard input
+			var plugin = event.data.plugin;
             var input = plugin.elements.CommandInputField;
             var inputValue = input.val();
             var inputPosition = input[0].selectionStart;
@@ -177,16 +174,25 @@
         
         $(this.element).bind("click", {plugin: this}, function(event) {
             var plugin = event.data.plugin;
-            var input = plugin.elements.CommandInputField;
 			var selection = window.getSelection().toString();
             if(selection !== ""){ //Prevent focusing when selecting text
                 return;
             }
-            var y = plugin.element[0].scrollTop; //prevent autoscrolling 
-            input.focus();
+            var y = plugin.element[0].scrollTop; //prevent auto-scrolling 
+            
+			var input = plugin.elements.CommandInputField;
+			input.focus();
             plugin.element[0].scrollTop = y;
         });
         
+		$(this.elements.CommandInputField).bind("focus", {plugin: this}, function(event) { //Toggle focus class on the plug-in container (used for the fancy blinking indicator)
+			var plugin = event.data.plugin;
+			plugin.element.addClass("focus");
+		}).bind("blur", {plugin: this}, function(event) {
+			var plugin = event.data.plugin;
+			plugin.element.removeClass("focus");
+		});
+		
         //To make that thingy blink
         $(this.elements.CommandInputField).trigger("init");
         this.element.append(this.elements.log, this.elements.prompt, this.elements.inputMirror, this.elements.form);

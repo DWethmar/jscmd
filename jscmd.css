@@ -22,7 +22,7 @@
     content: ">";
 }
 
-.jscmd > .jscmd-inputMirror span.input-position{
+.jscmd.focus > .jscmd-inputMirror span.input-position{
     border-bottom: 4px solid white;
     animation: blink steps(1) 1s infinite;
     -webkit-animation: blink steps(1) 1s infinite;
