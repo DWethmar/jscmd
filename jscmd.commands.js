@@ -24,7 +24,8 @@ function loadCommands(jscmd){
      });
      
     //Welcome!
-    jscmd.registerCommand("cd", "Display the name of or changes the current directory.", function(jscmd, params){
+	var commandCdDescription = "Display the name of or changes the current directory.";
+    jscmd.registerCommand("cd", commandCdDescription, function(jscmd, params){
         
         var relativePathParts = new Array();
         var currentPathParts = new Array(); 
@@ -33,24 +34,29 @@ function loadCommands(jscmd){
             jscmd.setPath(jscmd.getPath());
         }
         
-        if(params[0].length === 1 && params[0].charAt(0) === "\\"){ //Go to root
-            currentPathParts.unshift(jscmd.options.disk + ":");
-        }else{
-            var relativePathParts = params[0].split('/');
-            var currentPathParts = jscmd.options.path.split("\\").filter(function(n){ //No empty part yes please
-                return n.length > 0;
-            });
-            $.each(relativePathParts, function(key, value){
-                if(value === ".." && currentPathParts.length > 0){
-                    currentPathParts.pop();
-                }else{
-                    if(value.charAt(0) !== "."){
-                        currentPathParts.push(value);
-                    }
-                }
-            });
-            currentPathParts.unshift(jscmd.options.disk + ":");
-        }
+		if(params.length === 0){
+			jscmd.addLogEntry(jscmd.getPath());
+			return;
+		}else{
+			if(params[0].length === 1 && params[0].charAt(0) === "\\"){ //Go to root
+				currentPathParts.unshift(jscmd.options.disk + ":");
+			}else{
+				var relativePathParts = params[0].split('/');
+				var currentPathParts = jscmd.options.path.split("\\").filter(function(n){ //No empty part yes please
+					return n.length > 0;
+				});
+				$.each(relativePathParts, function(key, value){
+					if(value === ".." && currentPathParts.length > 0){
+						currentPathParts.pop();
+					}else{
+						if(value.charAt(0) !== "."){
+							currentPathParts.push(value);
+						}
+					}
+				});
+				currentPathParts.unshift(jscmd.options.disk + ":");
+			}
+		}
         jscmd.setPath(currentPathParts.join("\\"));
     });
 	
