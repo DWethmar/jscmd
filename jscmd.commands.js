@@ -80,6 +80,25 @@ function loadCommands(jscmd){
         jscmd.addLogEntry(jscmd.options.namespace + " [version: " + jscmd.options.version + "]");
     });
     
+	jscmd.registerCommand("netwerk", "", function(jscmd, params){
+		var url = 'http://ip-api.com/json';
+		$.get(url, function(data){
+			jscmd.addLogEntry(url);
+			$.getJSON("http://ip-api.com/json/?callback=?", function(data) {
+				$.each(data, function(k, v) {
+					if(k !== ''){
+						jscmd.addLogEntry(k + ": " + v);
+					}
+				});
+			});
+		}).fail(function() {
+			jscmd.addLogEntry("Error while connecting to: " + url);
+		}).always(function(){
+			jscmd.executionFinished();
+		});
+		return true;
+    });
+	
     jscmd.registerCommand("rps", "Rock Paper Sciccors!", function(jscmd, params){
         var things = ['Rock', 'Paper', 'Scissor'];
         var computerPick = things[Math.floor(Math.random()*things.length)];

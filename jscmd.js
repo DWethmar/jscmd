@@ -137,7 +137,7 @@
             
             plugin.addLogEntry(path + input);
             plugin.execute(input);
-            
+			
             //Auto scroll
             plugin.element[0].scrollTop = plugin.element[0].scrollHeight;
         });
@@ -201,9 +201,10 @@
         this.addLogEntry("(c) 2014 Dennis Wethmar. &#9733;");
         this.addLogEntry("&nbsp;");
     };
-
+	
+	var i = 0;
     Plugin.prototype.addLogEntry = function(log) {
-        this.elements.log.append($(document.createElement("div")).attr({class: "log-entry"}).html(log));
+        this.elements.log.append($(document.createElement("div")).attr('id', 'log-entry-' + (i++)).addClass("log-entry").html(log));
     };
     
     Plugin.prototype.registerCommand = function(name, description, logic) {
@@ -257,22 +258,22 @@
                 for(var i = 0; i < stack.length; i++){
                     this.addLogEntry(stack[i]);
                 }
-                keepFocus = true;
+                keepFocus = false;
             }finally{
-                if(typeof keepFocus === "undefined" || keepFocus === false){ 
+                if(typeof keepFocus === "undefined" || keepFocus === false){ //If keepFocus true then dont finish but let the function finish itself
                     this.executionFinished();
                 }
             }
         }else{
             this.addLogEntry("'" + commandName + "' is not recognized as an internal or external command.");
-            this.addLogEntry("&nbsp;");
+			this.addLogEntry("&nbsp;");
         }
     };
     
     Plugin.prototype.executionFinished = function(){
 		this.elements.inputMirror.prop('disabled', false);
         this.setPath(this.getPath());
-        this.addLogEntry("&nbsp;");
+		this.addLogEntry("&nbsp;");
     };
     
     function Command(name, decription, logic){
