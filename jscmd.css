@@ -28,6 +28,10 @@
     -webkit-animation: blink steps(1) 1s infinite;
 }
 
+.jscmd .jscmd-log .empty-log-entry::after{ 
+    content: "\00a0";
+}
+
 @keyframes blink {
     0%  { border-color: white; }
     50%  { border-color: transparent; }

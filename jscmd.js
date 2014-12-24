@@ -139,7 +139,7 @@
             plugin.execute(input);
 			
             //Auto scroll
-            plugin.element[0].scrollTop = plugin.element[0].scrollHeight;
+            plugin.scrollDown();
         });
 		
 		$(this.elements.CommandInputField).bind("keydown", {plugin: this}, function(event) { //Command playback listener
@@ -199,14 +199,22 @@
         
         this.addLogEntry(this.options.namespace + " [version: " + this.options.version + "]");
         this.addLogEntry("(c) 2014 Dennis Wethmar. &#9733;");
-        this.addLogEntry("&nbsp;");
+        this.addEmptyLogEntry()
     };
 	
 	var i = 0;
     Plugin.prototype.addLogEntry = function(log) {
         this.elements.log.append($(document.createElement("div")).attr('id', 'log-entry-' + (i++)).addClass("log-entry").html(log));
     };
+	
+	Plugin.prototype.addEmptyLogEntry = function() {
+        this.elements.log.append($(document.createElement("div")).addClass("empty-log-entry"));
+    };
     
+	Plugin.prototype.scrollDown = function() {
+        this.element[0].scrollTop = this.element[0].scrollHeight;
+    };
+	
     Plugin.prototype.registerCommand = function(name, description, logic) {
         this.commandCollection.push(new Command(name, description, logic));
     };
@@ -266,14 +274,15 @@
             }
         }else{
             this.addLogEntry("'" + commandName + "' is not recognized as an internal or external command.");
-			this.addLogEntry("&nbsp;");
+			this.addEmptyLogEntry();
         }
     };
     
     Plugin.prototype.executionFinished = function(){
 		this.elements.inputMirror.prop('disabled', false);
         this.setPath(this.getPath());
-		this.addLogEntry("&nbsp;");
+		this.addEmptyLogEntry();
+		this.scrollDown();
     };
     
     function Command(name, decription, logic){

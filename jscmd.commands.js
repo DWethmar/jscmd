@@ -80,23 +80,22 @@ function loadCommands(jscmd){
         jscmd.addLogEntry(jscmd.options.namespace + " [version: " + jscmd.options.version + "]");
     });
     
-	jscmd.registerCommand("netwerk", "", function(jscmd, params){
+	jscmd.registerCommand("netwerk", "Display netwerk data", function(jscmd, params){
 		var url = 'http://ip-api.com/json';
 		$.get(url, function(data){
-			jscmd.addLogEntry(url);
-			$.getJSON("http://ip-api.com/json/?callback=?", function(data) {
-				$.each(data, function(k, v) {
-					if(k !== ''){
-						jscmd.addLogEntry(k + ": " + v);
-					}
-				});
+			jscmd.addLogEntry("Calling " + url);
+			$.each(data, function(k, v) {
+				if(k !== ''){
+					jscmd.addLogEntry(k + ": " + v);
+				}				
 			});
 		}).fail(function() {
 			jscmd.addLogEntry("Error while connecting to: " + url);
 		}).always(function(){
 			jscmd.executionFinished();
 		});
-		return true;
+		
+		return true; //Return true is exiting on own terms
     });
 	
     jscmd.registerCommand("rps", "Rock Paper Sciccors!", function(jscmd, params){
