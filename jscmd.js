@@ -157,7 +157,7 @@
 				break;
 				case 40: // down
 					plugin.commandPlaybackIndex--;
-					if(plugin.commandPlaybackIndex < 0){
+					if(plugin.commandPlaybackIndex <= 0){
 						plugin.commandPlaybackIndex = 0;
 					}
 				break;
@@ -197,8 +197,8 @@
         $(this.elements.CommandInputField).trigger("init");
         this.element.append(this.elements.log, this.elements.prompt, this.elements.inputMirror, this.elements.form);
         
-        this.addLogEntry(this.options.namespace + " [version: " + this.options.version + "]");
-        this.addLogEntry("(c) 2014 Dennis Wethmar. &#9733;");
+        this.addLogEntry(this.options.namespace + " [version " + this.options.version + "]");
+        this.addLogEntry("Noperight (c) 2014 Dennis Wethmar. All your base.");
         this.addEmptyLogEntry()
     };
 	
@@ -258,7 +258,7 @@
         if(result.length > 0){
             var command = result[0];
             var keepFocus = false;
-			this.elements.inputMirror.prop('disabled', true);
+			this.elements.inputMirror.hide();
             try{
                 keepFocus = command.logic(this, parameters);
             }catch(e){
@@ -266,9 +266,9 @@
                 for(var i = 0; i < stack.length; i++){
                     this.addLogEntry(stack[i]);
                 }
-                keepFocus = false;
+                keepFocus = true;
             }finally{
-                if(typeof keepFocus === "undefined" || keepFocus === false){ //If keepFocus true then dont finish but let the function finish itself
+                if(typeof keepFocus === "undefined" || keepFocus === true){ //If keepFocus true then don't finish but let the function finish itself
                     this.executionFinished();
                 }
             }
@@ -279,7 +279,7 @@
     };
     
     Plugin.prototype.executionFinished = function(){
-		this.elements.inputMirror.prop('disabled', false);
+		this.elements.inputMirror.show();
         this.setPath(this.getPath());
 		this.addEmptyLogEntry();
 		this.scrollDown();

@@ -80,6 +80,46 @@ function loadCommands(jscmd){
         jscmd.addLogEntry(jscmd.options.namespace + " [version: " + jscmd.options.version + "]");
     });
     
+	jscmd.registerCommand("crash", "crash", function(jscmd, params){
+        return false;
+    });
+	
+	jscmd.registerCommand("ping", "ping website", function(jscmd, params){
+		
+		var url = params[0];
+		
+		function ping(host, port, pong) {
+
+			var started = new Date().getTime();
+
+			var http = new XMLHttpRequest();
+
+			http.open("GET", "http://" + host + ":" + port, /*async*/true);
+			http.onreadystatechange = function() {
+				if (http.readyState == 4) {
+					var ended = new Date().getTime();
+
+					var milliseconds = ended - started;
+					
+					jscmd.addLogEntry(milliseconds);
+					
+					if (pong != null) {
+						pong(milliseconds);
+					}
+				}
+			};
+			try {
+				http.send(null);
+			} catch(exception) {
+				// this is expected
+			}
+
+		}
+		
+		ping(url, 80, null);
+		
+    });
+	
 	jscmd.registerCommand("netwerk", "Display netwerk data", function(jscmd, params){
 		var url = 'http://ip-api.com/json';
 		$.get(url, function(data){
