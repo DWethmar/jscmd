@@ -2,17 +2,17 @@
 function loadCommands(jscmd){
         
     //help function
-    jscmd.registerCommand("help", "Provides Help information for jscmd commands.", function(jscmd, params){
+    jscmd.registerProgramme("help", "Provides Help information for jscmd commands.", function(jscmd, params){
 
         var maxfunctionNameLenght = 10;
         
-        var commands =  jscmd.commandCollection.sort(function(a, b){
+        var programmeNameList =  jscmd.programmeCollection.sort(function(a, b){
             var aName = a.name.toLowerCase();
             var bName = b.name.toLowerCase(); 
             return ((aName < bName) ? -1 : ((aName > bName) ? 1 : 0));
         });
         
-        $.each(commands, function( key, value ) {
+        $.each(programmeNameList, function( key, value ) {
             var paddingRight = '';
             var name = value.name.substring(0, maxfunctionNameLenght);
             var m = Math.abs(name.length - maxfunctionNameLenght);
@@ -25,7 +25,7 @@ function loadCommands(jscmd){
      
     //Welcome!
 	var commandCdDescription = "Display the name of or changes the current directory.";
-    jscmd.registerCommand("cd", commandCdDescription, function(jscmd, params){
+    jscmd.registerProgramme("cd", commandCdDescription, function(jscmd, params){
         
         var relativePathParts = new Array();
         var currentPathParts = new Array(); 
@@ -61,7 +61,7 @@ function loadCommands(jscmd){
     });
 	
 	var commandTimeDescription = "Display browser time.";
-	jscmd.registerCommand("time", commandTimeDescription, function(jscmd, params){
+	jscmd.registerProgramme("time", commandTimeDescription, function(jscmd, params){
 		currentTime = new Date();
 		time = currentTime.getTime();
 		hours = currentTime.getHours();
@@ -71,20 +71,20 @@ function loadCommands(jscmd){
         jscmd.addLogEntry("Current time: " + hours + ":" + minutes + ":" + seconds + ","+miliseconds);
     });
     
-    jscmd.registerCommand("hello", "hello world.", function(jscmd, params){
+    jscmd.registerProgramme("hello", "hello world.", function(jscmd, params){
         jscmd.addLogEntry("Hello world!");
         jscmd.addLogEntry("Your params: " + params.join(", "));
     });
 	
-	jscmd.registerCommand("ver", "Display the JSCMD version", function(jscmd, params){
+	jscmd.registerProgramme("ver", "Display the JSCMD version", function(jscmd, params){
         jscmd.addLogEntry(jscmd.options.namespace + " [version: " + jscmd.options.version + "]");
     });
     
-	jscmd.registerCommand("crash", "crash", function(jscmd, params){
+	jscmd.registerProgramme("crash", "crash", function(jscmd, params){
         return false;
     });
 	
-	jscmd.registerCommand("ping", "ping website", function(jscmd, params){
+	jscmd.registerProgramme("ping", "ping website", function(jscmd, params){
 		
 		var url = params[0];
 		
@@ -113,14 +113,14 @@ function loadCommands(jscmd){
 			} catch(exception) {
 				// this is expected
 			}
-
 		}
 		
 		ping(url, 80, null);
 		
+		return true;
     });
 	
-	jscmd.registerCommand("netwerk", "Display netwerk data", function(jscmd, params){
+	jscmd.registerProgramme("netwerk", "Display netwerk data", function(jscmd, params){
 		var url = 'http://ip-api.com/json';
 		$.get(url, function(data){
 			jscmd.addLogEntry("Calling " + url);
@@ -138,7 +138,34 @@ function loadCommands(jscmd){
 		return true; //Return true is exiting on own terms
     });
 	
-    jscmd.registerCommand("rps", "Rock Paper Sciccors!", function(jscmd, params){
+	//&#9608
+	jscmd.registerProgramme("uit", "ui_test", function(jscmd, params){
+		
+		var logElement = jscmd.addLogEntry("/");
+		
+		var t = 0;
+		var c = ['/', '-', '\\', '|'];
+		
+		(function myLoop (i) {          
+		   setTimeout(function () {   
+				t++;
+				if(t>= 5){
+					t = 0;
+				}
+				logElement.html(c[t]);     
+				if (--i){
+					myLoop(i);      //  decrement i and call myLoop again if i > 0
+				}else{
+					logElement.html("|"); 
+				}
+		   }, 100)
+		})(100);                        //  pass the number of iterations as an argument
+		
+		return true; 
+	});
+	
+	
+    jscmd.registerProgramme("rps", "Rock Paper Sciccors!", function(jscmd, params){
         var things = ['Rock', 'Paper', 'Scissor'];
         var computerPick = things[Math.floor(Math.random()*things.length)];
 
@@ -157,28 +184,28 @@ function loadCommands(jscmd){
 
         switch(userPick.toLowerCase()) {
             case 'rock':
-                    if(computerPick.toLowerCase() === "scissor"){
-                        result = 1;
-                    }
-                    if(computerPick.toLowerCase() === "paper"){
-                        result = 2;
-                    }
+				if(computerPick.toLowerCase() === "scissor"){
+					result = 1;
+				}
+				if(computerPick.toLowerCase() === "paper"){
+					result = 2;
+				}
                 break;
             case 'paper':
-                    if(computerPick.toLowerCase() === "rock"){
-                        result = 1;
-                    }
-                    if(computerPick.toLowerCase() === "scissor"){
-                        result = 2;
-                    }
+				if(computerPick.toLowerCase() === "rock"){
+					result = 1;
+				}
+				if(computerPick.toLowerCase() === "scissor"){
+					result = 2;
+				}
                 break;
             case 'scissor':
-                    if(computerPick.toLowerCase() === "paper"){
-                        result = 1;
-                    }
-                    if(computerPick.toLowerCase() === "rock"){
-                        result = 2;
-                    }
+				if(computerPick.toLowerCase() === "paper"){
+					result = 1;
+				}
+				if(computerPick.toLowerCase() === "rock"){
+					result = 2;
+				}
                 break;
             default:
                 result = 3;

@@ -40,10 +40,14 @@
             prompt: ""
         };
         
-        this.commandCollection = new Array();
+        this.programmeCollection = new Array();
 		
         this.commandHistory = new Array();
         this.commandPlaybackIndex = 0;
+		
+        this.isExcecuting = false;
+		
+		this.commandQueue = new Array(); //Commands to be excecuted
 		
         $.extend(this.options, options);
 
@@ -198,25 +202,33 @@
         this.element.append(this.elements.log, this.elements.prompt, this.elements.inputMirror, this.elements.form);
         
         this.addLogEntry(this.options.namespace + " [version " + this.options.version + "]");
-        this.addLogEntry("Noperight (c) 2014 Dennis Wethmar. All your base.");
+        this.addLogEntry("Noperight (c) 2014 Dennis Wethmar. All your base. ");
         this.addEmptyLogEntry()
     };
 	
-	var i = 0;
-    Plugin.prototype.addLogEntry = function(log) {
-        this.elements.log.append($(document.createElement("div")).attr('id', 'log-entry-' + (i++)).addClass("log-entry").html(log));
+    Plugin.prototype.addLogEntry = function(log, id) {
+
+		var e = $(document.createElement("div"));
+		
+		if (typeof variable !== 'undefined') {
+			e.addClass("log-entry-"+id);
+		}
+		e.addClass("log-entry");
+		
+		this.elements.log.append(e.html(log));
+        return e;
     };
 	
 	Plugin.prototype.addEmptyLogEntry = function() {
-        this.elements.log.append($(document.createElement("div")).addClass("empty-log-entry"));
+        return this.addLogEntry('', null).addClass('empty-log-entry');
     };
     
 	Plugin.prototype.scrollDown = function() {
         this.element[0].scrollTop = this.element[0].scrollHeight;
     };
 	
-    Plugin.prototype.registerCommand = function(name, description, logic) {
-        this.commandCollection.push(new Command(name, description, logic));
+    Plugin.prototype.registerProgramme = function(name, description, logic) {
+        this.programmeCollection.push(new Programme(name, description, logic));
     };
     
     Plugin.prototype.getPath = function(){
@@ -238,9 +250,9 @@
         if(parameters === null || parameters.length === 0){
             parameters = new Array(); //No parameters found
         }
-        var commandName = parameters.shift(); // Remove The command name from the parameters array
+        var programmeName = parameters.shift(); // Remove The command name from the parameters array
         
-        if(typeof commandName === "undefined"){
+        if(typeof programmeName === "undefined"){
             return;
         }
         
@@ -251,32 +263,62 @@
 			}
 		});
 		
-        var result = $.grep(this.commandCollection, function(e){ 
-            return e.name.toLowerCase() === commandName; 
+        var programmeSearchResult = $.grep(this.programmeCollection, function(e){ //Find the command in the programmeCollection
+            return e.name.toLowerCase() === programmeName; 
         });
         
-        if(result.length > 0){
-            var command = result[0];
-            var keepFocus = false;
-			this.elements.inputMirror.hide();
-            try{
-                keepFocus = command.logic(this, parameters);
-            }catch(e){
-                var stack = e.stack.split("\n");
-                for(var i = 0; i < stack.length; i++){
-                    this.addLogEntry(stack[i]);
-                }
-                keepFocus = true;
-            }finally{
-                if(typeof keepFocus === "undefined" || keepFocus === true){ //If keepFocus true then don't finish but let the function finish itself
-                    this.executionFinished();
-                }
-            }
+        if(programmeSearchResult.length > 0){
+            var programme = programmeSearchResult[0];
+			
+			var command = new Command(parameters, programme);
+			
+			this.commandQueue.push(command);
+			
         }else{
-            this.addLogEntry("'" + commandName + "' is not recognized as an internal or external command.");
+            this.addLogEntry("'" + programmeName + "' is not recognized as an internal or external command.");
 			this.addEmptyLogEntry();
         }
+		
+		excecuteQueue.call(this); //Run commands
     };
+	
+	function excecuteQueue(){
+	
+		if(this.isExcecuting == false){
+
+			this.isExcecuting = true;
+			
+			for(var i = 0; i < this.commandQueue.length; i++){
+			
+				this.elements.inputMirror.hide();
+				var keepFocus = false;
+				
+				var command = this.commandQueue[i];
+				var params = command.params;
+				var programme = command.Programme;
+				
+				try{
+					keepFocus = programme.logic(this, params);
+				}catch(e){
+					var stack = e.stack.split("\n");
+					for(var i = 0; i < stack.length; i++){
+						this.addLogEntry(stack[i]);
+					}
+					keepFocus = true;
+					this.isExcecuting = false;
+
+				}finally{
+					if(typeof keepFocus === "undefined" || keepFocus === true){ //If keepFocus true then don't finish but let the function finish itself
+						this.executionFinished();
+					}
+				}
+				this.commandQueue.shift();
+			}
+			
+			//Done
+			this.isExcecuting = false;
+		}
+	}
     
     Plugin.prototype.executionFinished = function(){
 		this.elements.inputMirror.show();
@@ -285,7 +327,13 @@
 		this.scrollDown();
     };
     
-    function Command(name, decription, logic){
+	//Classes
+	function Command(params, Programme){
+        this.params = params;
+        this.Programme = Programme;
+    }
+	
+    function Programme(name, decription, logic){
         this.name = name;
         this.decription = decription;
         this.logic = logic;
