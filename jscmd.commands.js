@@ -112,12 +112,15 @@ function loadCommands(jscmd){
 				http.send(null);
 			} catch(exception) {
 				// this is expected
+			}finally{
+				jscmd.executionFinished();
 			}
+			
 		}
 		
 		ping(url, 80, null);
 		
-		return true;
+		return false;
     });
 	
 	jscmd.registerProgramme("netwerk", "Display netwerk data", function(jscmd, params){
@@ -155,13 +158,14 @@ function loadCommands(jscmd){
 				logElement.html(c[t]);     
 				if (--i){
 					myLoop(i);      //  decrement i and call myLoop again if i > 0
-				}else{
+				}else{ // done
 					logElement.html("|"); 
+					jscmd.executionFinished();
 				}
 		   }, 100)
-		})(100);                        //  pass the number of iterations as an argument
+		})(50);                        //  pass the number of iterations as an argument
 		
-		return true; 
+		return false;
 	});
 	
 	

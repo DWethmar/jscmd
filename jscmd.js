@@ -45,9 +45,8 @@
         this.commandHistory = new Array();
         this.commandPlaybackIndex = 0;
 		
-        this.isExcecuting = false;
-		
 		this.commandQueue = new Array(); //Commands to be excecuted
+		this.currentCommand = {};
 		
         $.extend(this.options, options);
 
@@ -202,7 +201,7 @@
         this.element.append(this.elements.log, this.elements.prompt, this.elements.inputMirror, this.elements.form);
         
         this.addLogEntry(this.options.namespace + " [version " + this.options.version + "]");
-        this.addLogEntry("Noperight (c) 2014 Dennis Wethmar. All your base. ");
+        this.addLogEntry("Noperight (c) 2015 Dennis Wethmar. All your base. ");
         this.addEmptyLogEntry()
     };
 	
@@ -264,71 +263,78 @@
 		});
 		
         var programmeSearchResult = $.grep(this.programmeCollection, function(e){ //Find the command in the programmeCollection
-            return e.name.toLowerCase() === programmeName; 
+            return e.name.toLowerCase() === programmeName.toLowerCase(); 
         });
         
         if(programmeSearchResult.length > 0){
             var programme = programmeSearchResult[0];
-			
 			var command = new Command(parameters, programme);
-			
 			this.commandQueue.push(command);
-			
         }else{
             this.addLogEntry("'" + programmeName + "' is not recognized as an internal or external command.");
 			this.addEmptyLogEntry();
         }
 		
-		excecuteQueue.call(this); //Run commands
+		var promise;
+		
+		if(Object.getOwnPropertyNames(this.currentCommand).length === 0){
+			promise = excecuteCommandQueue.call(this);
+		}else{
+			promise = this.currentCommand.Deferred.pipe( function(value){excecuteCommandQueue.call(value)});
+		}
+		
+		promise.done(function(){
+			this.currentCommand = {};
+		});
     };
 	
-	function excecuteQueue(){
-	
-		if(this.isExcecuting == false){
+	function excecuteCommandQueue(){
+		
+		this.currentCommand = this.commandQueue.shift();
+		
+		this.isExcecuting = true;
+		
+		this.elements.inputMirror.hide();
+		var keepFocus = false;
 
-			this.isExcecuting = true;
+		if(typeof this.currentCommand !== "undefined"){
+		
+			var params = this.currentCommand.params;
+			var programme = this.currentCommand.Programme;
 			
-			for(var i = 0; i < this.commandQueue.length; i++){
-			
-				this.elements.inputMirror.hide();
-				var keepFocus = false;
-				
-				var command = this.commandQueue[i];
-				var params = command.params;
-				var programme = command.Programme;
-				
-				try{
-					keepFocus = programme.logic(this, params);
-				}catch(e){
-					var stack = e.stack.split("\n");
-					for(var i = 0; i < stack.length; i++){
-						this.addLogEntry(stack[i]);
-					}
-					keepFocus = true;
-					this.isExcecuting = false;
-
-				}finally{
-					if(typeof keepFocus === "undefined" || keepFocus === true){ //If keepFocus true then don't finish but let the function finish itself
-						this.executionFinished();
-					}
+			try{
+				keepFocus = programme.logic(this, params);
+			}catch(e){
+				var stack = e.stack.split("\n");
+				for(var i = 0; i < stack.length; i++){
+					this.addLogEntry(stack[i]);
 				}
-				this.commandQueue.shift();
+				keepFocus = false;
+				excecuteCommandQueue = []; //Clear queue
+				
+			}finally{
+				if(typeof keepFocus === 'undefined' || keepFocus === true){ //If keepFocus true then don't finish but let the function finish itself
+					this.executionFinished();
+				}
 			}
-			
-			//Done
-			this.isExcecuting = false;
 		}
+		
+		return this.currentCommand.Deferred.promise();
 	}
     
     Plugin.prototype.executionFinished = function(){
+		
 		this.elements.inputMirror.show();
         this.setPath(this.getPath());
 		this.addEmptyLogEntry();
 		this.scrollDown();
+		
+		this.currentCommand.Deferred.resolve(this);
     };
     
 	//Classes
 	function Command(params, Programme){
+		this.Deferred = $.Deferred();
         this.params = params;
         this.Programme = Programme;
     }
