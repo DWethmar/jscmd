@@ -47,6 +47,7 @@
 		
 		this.commandQueue = new Array(); //Commands to be excecuted
 		this.currentCommand;
+		this.inputCallback;
 		
         $.extend(this.options, options);
 
@@ -135,7 +136,7 @@
 			}
 			
             var path = $("<div>").append( //Put the path in a span so we can style it
-                $("<span>").addClass("prompt").html(plugin.getPath() + ">")
+                $("<span>").addClass("prompt").html(plugin.getPath())
             ).html();
             
             plugin.queueCommand(input);
@@ -200,7 +201,7 @@
         this.element.append(this.elements.log, this.elements.prompt, this.elements.inputMirror, this.elements.form);
         
         this.addLogEntry(this.options.namespace + " [version " + this.options.version + "]");
-        this.addLogEntry("Noperight (c) 2015 Dennis Wethmar. All your base. ");
+        this.addLogEntry("Noperight (c) 2015 Dennis Wethmar. All your base. &#9812;");
         this.addEmptyLogEntry()
     };
 	
@@ -230,25 +231,47 @@
     };
     
     Plugin.prototype.getPath = function(){
-        return this.options.disk + ":" + ( this.options.path === "" ? "\\" : this.options.path) + "";
+        return this.options.disk + ":" + ( this.options.path === "" ? "\\" : this.options.path) + ">";
     };
     
     Plugin.prototype.setPath = function(path){
-        var pieces = path.split(':', 2);
-        var disk  = pieces[0];
-        var path  = pieces[1];
-        this.options.disk = disk;
-        this.options.path = path;
+        this.elements.prompt.html(path);
+    };
+	
+	Plugin.prototype.resetPath = function(){
         this.elements.prompt.html(this.getPath());
     };
+	
+	Plugin.prototype.showPrompt = function(enable){
+		
+		if(enable === true){
+			this.elements.inputMirror.show();
+			this.elements.prompt.show();
+		}else{
+			this.elements.inputMirror.hide();
+			this.elements.prompt.hide();
+		}
+	}
     
     Plugin.prototype.queueCommand = function(fullCommand) {
-        
-		this.commandQueue.push(fullCommand);
-		if(typeof this.currentCommand === "undefined" ){
-			execute.call(this);
+
+		if(typeof function () {} === typeof this.inputCallback){ //First check if theres a progrmme eaiting for input
+			this.inputCallback(getParametersFromString(fullCommand));
+		}else{
+			this.commandQueue.push(fullCommand);
+			if(typeof this.currentCommand === "undefined" ){
+				execute.call(this);
+			}
 		}
     };
+	
+	function getParametersFromString(command){
+		var parameters = command.match(/(".*?"|[^"\s]+)+(?=\s*|\s*$)/g); //Separated by a space or between "
+        if(parameters === null || parameters.length === 0){
+            parameters = new Array(); //No parameters found
+        }
+		return parameters;
+	}
 	
 	function execute(){
 		
@@ -257,19 +280,15 @@
 		}
 		
 		var fullCommand = this.commandQueue.shift();
-		
 		this.addLogEntry(this.getPath() + fullCommand);
+		var parameters = getParametersFromString(fullCommand);
 		
-		var parameters = fullCommand.match(/(".*?"|[^"\s]+)+(?=\s*|\s*$)/g); //Separated by a space or between "
-        if(parameters === null || parameters.length === 0){
-            parameters = new Array(); //No parameters found
-        }
         var programmeName = parameters.shift(); // Remove The command name from the parameters array
-        if(typeof programmeName === "undefined"){
+        if(typeof programmeName === "undefined"){ //Empty command!
             this.executionFinished();
 			return;
         }
-        
+
 		$.each( parameters, function( key, value ) { // remove outer quotes of parameters
 			if (value.charAt(0) === "\"" && value.charAt(value.length -1) === "\"")
 			{
@@ -286,13 +305,14 @@
 			this.currentCommand = new Command(parameters, programme);
         }else{
             this.addLogEntry("'" + programmeName + "' is not recognized as an internal or external command.");
+			this.addEmptyLogEntry();
 			this.executionFinished();
 			return;
         }
 		
-		this.elements.inputMirror.hide();
+		this.showPrompt(false);
+		
 		var keepFocus = false;
-
 		if(typeof this.currentCommand !== "undefined"){
 		
 			var params = this.currentCommand.params;
@@ -307,27 +327,42 @@
 				}
 				keepFocus = false;
 			}finally{
-				if(typeof keepFocus === 'undefined' || keepFocus === true){ //If keepFocus true then don't finish but let the function finish itself
+				if(typeof keepFocus === "undefined"){ //If keepFocus true then don't finish but let the function finish itself
+					this.addEmptyLogEntry();
 					this.executionFinished();
 				}
 			}
 		}
 	}
-    
+
     Plugin.prototype.executionFinished = function(){
 		
-		this.elements.inputMirror.show();
-        this.setPath(this.getPath());
-		this.addEmptyLogEntry();
 		this.scrollDown();
+		
 		delete this.currentCommand;
+		delete this.inputCallback;
 		
 		execute.call(this);
 		
 		//Auto scroll
 		this.scrollDown();
+		this.resetPath();
+		this.showPrompt(true);
     };
+	
+		
+	Plugin.prototype.waitForInput = function(prompt, callback) {
+		
+		this.setPath(prompt);
+		if(typeof function () {} === typeof callback){
+			this.showPrompt(true);
+			this.inputCallback = callback;
+		}else{
+			this.executionFinished();
+		}
+	}
     
+	
 	//Classes
 	function Command(params, Programme){
 		this.Deferred = $.Deferred();

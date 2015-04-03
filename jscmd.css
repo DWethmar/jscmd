@@ -19,7 +19,7 @@
 }
 
 .jscmd > .jscmd-prompt::after{ 
-    content: ">";
+    /*content: ">";*/
 }
 
 .jscmd.focus > .jscmd-inputMirror span.input-position{
