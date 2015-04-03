@@ -27,7 +27,7 @@
         this.element = element.find("div");
 
         this.options = {
-            version: "1.0.3",
+            version: "1.1.0",
             namespace: "jscmd",
 			disk: "J",
             path: "\\"
@@ -140,8 +140,8 @@
             
             plugin.queueCommand(input);
 			
-            //Auto scroll
-            plugin.scrollDown();
+			plugin.scrollDown();
+
         });
 		
 		$(this.elements.CommandInputField).bind("keydown", {plugin: this}, function(event) { //Command playback listener
@@ -159,7 +159,7 @@
 				break;
 				case 40: // down
 					plugin.commandPlaybackIndex--;
-					if(plugin.commandPlaybackIndex <= 0){
+					if(plugin.commandPlaybackIndex < 0){
 						plugin.commandPlaybackIndex = 0;
 					}
 				break;
@@ -230,7 +230,7 @@
     };
     
     Plugin.prototype.getPath = function(){
-        return this.options.disk + ":" + ( this.options.path === "" ? "\\" : this.options.path);
+        return this.options.disk + ":" + ( this.options.path === "" ? "\\" : this.options.path) + "";
     };
     
     Plugin.prototype.setPath = function(path){
@@ -265,9 +265,9 @@
             parameters = new Array(); //No parameters found
         }
         var programmeName = parameters.shift(); // Remove The command name from the parameters array
-        
         if(typeof programmeName === "undefined"){
-            return;
+            this.executionFinished();
+			return;
         }
         
 		$.each( parameters, function( key, value ) { // remove outer quotes of parameters
@@ -286,7 +286,7 @@
 			this.currentCommand = new Command(parameters, programme);
         }else{
             this.addLogEntry("'" + programmeName + "' is not recognized as an internal or external command.");
-			this.addEmptyLogEntry();
+			this.executionFinished();
 			return;
         }
 		
@@ -306,8 +306,6 @@
 					this.addLogEntry(stack[i]);
 				}
 				keepFocus = false;
-				excecuteCommandQueue = []; //Clear queue
-				
 			}finally{
 				if(typeof keepFocus === 'undefined' || keepFocus === true){ //If keepFocus true then don't finish but let the function finish itself
 					this.executionFinished();
@@ -325,6 +323,9 @@
 		delete this.currentCommand;
 		
 		execute.call(this);
+		
+		//Auto scroll
+		this.scrollDown();
     };
     
 	//Classes
