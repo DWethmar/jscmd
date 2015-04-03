@@ -285,7 +285,7 @@
 		
         var programmeName = parameters.shift(); // Remove The command name from the parameters array
         if(typeof programmeName === "undefined"){ //Empty command!
-            this.executionFinished();
+            //this.executionFinished();
 			return;
         }
 
@@ -336,6 +336,11 @@
 	}
 
     Plugin.prototype.executionFinished = function(){
+		
+		//Check if previous log is empty:
+		if(!$( ".log-entry" ).last().hasClass('empty-log-entry')){
+			this.addEmptyLogEntry();
+		}
 		
 		this.scrollDown();
 		
