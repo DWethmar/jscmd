@@ -26,10 +26,22 @@ function loadCommands(jscmd){
 	jscmd.registerProgramme("it", "Input test", function(jscmd, params){
 		jscmd.addLogEntry("Hello what is your name ?");
 		jscmd.showPrompt(true);
-		jscmd.waitForInput("Name: ", function(params){
-			jscmd.addLogEntry("Your name is: " + params.join(" "));
-			jscmd.executionFinished();
+		
+		var name = "";
+		
+		jscmd.waitForInput("Firstname: ", function(params){
+			name = params.join(" ");
+			jscmd.addLogEntry("Your firstname is: " + params.join(" "));
+			
+			jscmd.waitForInput("Lastname: ", function(params){
+				name = name + " " + params.join(" ");
+				jscmd.addLogEntry("Your lastname is: " + params.join(" "));
+				jscmd.addLogEntry("Your fullname is: " + name);
+				jscmd.executionFinished();
+			});
 		});
+		
+		return true;
     });
      
     //Welcome!

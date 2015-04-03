@@ -348,9 +348,8 @@
 		delete this.inputCallback;
 		
 		execute.call(this);
-		
-		//Auto scroll
-		this.scrollDown();
+
+		this.scrollDown();//Auto scroll to inputmirror
 		this.resetPath();
 		this.showPrompt(true);
     };
