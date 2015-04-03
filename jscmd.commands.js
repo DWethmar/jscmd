@@ -168,6 +168,31 @@ function loadCommands(jscmd){
 		return false;
 	});
 	
+	jscmd.registerProgramme("uit2", "ui_test", function(jscmd, params){
+		
+		var logElement = jscmd.addLogEntry("/");
+		
+		var t = 0;
+		var c = ['/', '-', '\\', '|'];
+		
+		(function myLoop (i) {          
+		   setTimeout(function () {   
+				t++;
+				if(t>= 5){
+					t = 0;
+				}
+				logElement.html(c[t]);     
+				if (--i){
+					myLoop(i);      //  decrement i and call myLoop again if i > 0
+				}else{ // done
+					logElement.html("|"); 
+					jscmd.executionFinished();
+				}
+		   }, 100)
+		})(50);                        //  pass the number of iterations as an argument
+		
+		return false;
+	});
 	
     jscmd.registerProgramme("rps", "Rock Paper Sciccors!", function(jscmd, params){
         var things = ['Rock', 'Paper', 'Scissor'];

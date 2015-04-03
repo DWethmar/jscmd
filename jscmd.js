@@ -46,7 +46,7 @@
         this.commandPlaybackIndex = 0;
 		
 		this.commandQueue = new Array(); //Commands to be excecuted
-		this.currentCommand = {};
+		this.currentCommand;
 		
         $.extend(this.options, options);
 
@@ -138,8 +138,7 @@
                 $("<span>").addClass("prompt").html(plugin.getPath() + ">")
             ).html();
             
-            plugin.addLogEntry(path + input);
-            plugin.execute(input);
+            plugin.queueCommand(input);
 			
             //Auto scroll
             plugin.scrollDown();
@@ -243,9 +242,25 @@
         this.elements.prompt.html(this.getPath());
     };
     
-    Plugin.prototype.execute = function(fullCommand) {
+    Plugin.prototype.queueCommand = function(fullCommand) {
         
-        var parameters = fullCommand.match(/(".*?"|[^"\s]+)+(?=\s*|\s*$)/g); //Separated by a space or between "
+		this.commandQueue.push(fullCommand);
+		if(typeof this.currentCommand === "undefined" ){
+			execute.call(this);
+		}
+    };
+	
+	function execute(){
+		
+		if(this.commandQueue.length == 0){
+			return;
+		}
+		
+		var fullCommand = this.commandQueue.shift();
+		
+		this.addLogEntry(this.getPath() + fullCommand);
+		
+		var parameters = fullCommand.match(/(".*?"|[^"\s]+)+(?=\s*|\s*$)/g); //Separated by a space or between "
         if(parameters === null || parameters.length === 0){
             parameters = new Array(); //No parameters found
         }
@@ -255,7 +270,7 @@
             return;
         }
         
-		$.each( parameters, function( key, value ) { // remove outer qoutes of parameters
+		$.each( parameters, function( key, value ) { // remove outer quotes of parameters
 			if (value.charAt(0) === "\"" && value.charAt(value.length -1) === "\"")
 			{
 				parameters[key] = value.substr(1,value.length -2);
@@ -268,31 +283,12 @@
         
         if(programmeSearchResult.length > 0){
             var programme = programmeSearchResult[0];
-			var command = new Command(parameters, programme);
-			this.commandQueue.push(command);
+			this.currentCommand = new Command(parameters, programme);
         }else{
             this.addLogEntry("'" + programmeName + "' is not recognized as an internal or external command.");
 			this.addEmptyLogEntry();
+			return;
         }
-		
-		var promise;
-		
-		if(Object.getOwnPropertyNames(this.currentCommand).length === 0){
-			promise = excecuteCommandQueue.call(this);
-		}else{
-			promise = this.currentCommand.Deferred.pipe( function(value){excecuteCommandQueue.call(value)});
-		}
-		
-		promise.done(function(){
-			this.currentCommand = {};
-		});
-    };
-	
-	function excecuteCommandQueue(){
-		
-		this.currentCommand = this.commandQueue.shift();
-		
-		this.isExcecuting = true;
 		
 		this.elements.inputMirror.hide();
 		var keepFocus = false;
@@ -318,8 +314,6 @@
 				}
 			}
 		}
-		
-		return this.currentCommand.Deferred.promise();
 	}
     
     Plugin.prototype.executionFinished = function(){
@@ -328,8 +322,9 @@
         this.setPath(this.getPath());
 		this.addEmptyLogEntry();
 		this.scrollDown();
+		delete this.currentCommand;
 		
-		this.currentCommand.Deferred.resolve(this);
+		execute.call(this);
     };
     
 	//Classes
