@@ -29,15 +29,15 @@
         this.options = {
             version: "1.1.0",
             namespace: "jscmd",
-			disk: "J",
+            disk: "J",
             path: "\\"
         };
 
         this.elements = {
-            inputField: "",
-			inputMirror: "",
-            form: "",
-            prompt: ""
+            inputField: undefined,
+            inputMirror: undefined,
+            form: undefined,
+            prompt: undefined
         };
         
         this.programmeCollection = new Array();
@@ -102,7 +102,7 @@
         });
 				
         $(this.elements.CommandInputField).bind("keyup keydown init", {plugin: this}, function(event) { //Handle keyboard input
-			var plugin = event.data.plugin;
+            var plugin = event.data.plugin;
             var input = plugin.elements.CommandInputField;
             var inputValue = input.val();
             var inputPosition = input[0].selectionStart;
@@ -130,50 +130,48 @@
             var input = plugin.elements.CommandInputField.val();
             plugin.elements.CommandInputField.val("");
             plugin.elements.inputMirror.empty();
-            
-			if(input != "" && input != plugin.commandHistory[0]){
-				plugin.commandHistory.unshift(input); //Add new entry to the history
-			}
-			
+
+            if(input !== "" && input !== plugin.commandHistory[0]){
+                plugin.commandHistory.unshift(input); //Add new entry to the history
+            }
+
             var path = $("<div>").append( //Put the path in a span so we can style it
                 $("<span>").addClass("prompt").html(plugin.getPath())
             ).html();
-            
-            plugin.queueCommand(input);
-			
-			plugin.scrollDown();
 
+            plugin.queueCommand(input);
+            plugin.scrollDown();
         });
 		
-		$(this.elements.CommandInputField).bind("keydown", {plugin: this}, function(event) { //Command playback listener
-		
-			var plugin = event.data.plugin;
-			var historyLenght = plugin.commandHistory.length;
-			var currentIndex = plugin.commandPlaybackIndex;
-			
-			switch(event.which) {
-				case 38: // up
-					plugin.commandPlaybackIndex++;
-					if(plugin.commandPlaybackIndex >= historyLenght){
-						plugin.commandPlaybackIndex = historyLenght - 1;
-					}
-				break;
-				case 40: // down
-					plugin.commandPlaybackIndex--;
-					if(plugin.commandPlaybackIndex < 0){
-						plugin.commandPlaybackIndex = 0;
-					}
-				break;
-				case 13: // enter
-					plugin.commandPlaybackIndex = 0;
-					return; // exit this handler for other keys
-				break;
-				default: return; // exit this handler for other keys
-			}
-			
-			plugin.elements.CommandInputField.val(plugin.commandHistory[currentIndex]);
-			event.preventDefault(); // prevent the default action (scroll / move caret)
-		});
+        $(this.elements.CommandInputField).bind("keydown", {plugin: this}, function(event) { //Command playback listener
+
+                var plugin = event.data.plugin;
+                var historyLenght = plugin.commandHistory.length;
+                var currentIndex = plugin.commandPlaybackIndex;
+
+                switch(event.which) {
+                    case 38: // up
+                            plugin.commandPlaybackIndex++;
+                            if(plugin.commandPlaybackIndex >= historyLenght){
+                                    plugin.commandPlaybackIndex = historyLenght - 1;
+                            }
+                    break;
+                    case 40: // down
+                            plugin.commandPlaybackIndex--;
+                            if(plugin.commandPlaybackIndex < 0){
+                                    plugin.commandPlaybackIndex = 0;
+                            }
+                    break;
+                    case 13: // enter
+                            plugin.commandPlaybackIndex = 0;
+                            return;
+                    break;
+                    default: return; // exit this handler for other keys
+                }
+
+                plugin.elements.CommandInputField.val(plugin.commandHistory[currentIndex]);
+                event.preventDefault(); // prevent the default action (scroll / move caret)
+        });
         
         $(this.element).bind("click", {plugin: this}, function(event) {
             var plugin = event.data.plugin;
@@ -188,13 +186,13 @@
             plugin.element[0].scrollTop = y;
         });
         
-		$(this.elements.CommandInputField).bind("focus", {plugin: this}, function(event) { //Toggle focus class on the plug-in container (used for the fancy blinking indicator)
-			var plugin = event.data.plugin;
-			plugin.element.addClass("focus");
-		}).bind("blur", {plugin: this}, function(event) {
-			var plugin = event.data.plugin;
-			plugin.element.removeClass("focus");
-		});
+        $(this.elements.CommandInputField).bind("focus", {plugin: this}, function(event) { //Toggle focus class on the plug-in container (used for the fancy blinking indicator)
+                var plugin = event.data.plugin;
+                plugin.element.addClass("focus");
+        }).bind("blur", {plugin: this}, function(event) {
+                var plugin = event.data.plugin;
+                plugin.element.removeClass("focus");
+        });
 		
         //To make that thingy blink
         $(this.elements.CommandInputField).trigger("init");
@@ -238,31 +236,31 @@
         this.elements.prompt.html(path);
     };
 	
-	Plugin.prototype.resetPath = function(){
+    Plugin.prototype.resetPath = function(){
         this.elements.prompt.html(this.getPath());
     };
 	
-	Plugin.prototype.showPrompt = function(enable){
-		
-		if(enable === true){
-			this.elements.inputMirror.show();
-			this.elements.prompt.show();
-		}else{
-			this.elements.inputMirror.hide();
-			this.elements.prompt.hide();
-		}
-	}
+    Plugin.prototype.showPrompt = function(enable){
+
+        if(enable === true){
+                this.elements.inputMirror.show();
+                this.elements.prompt.show();
+        }else{
+                this.elements.inputMirror.hide();
+                this.elements.prompt.hide();
+        }
+    }
     
     Plugin.prototype.queueCommand = function(fullCommand) {
 
-		if(typeof function () {} === typeof this.inputCallback){ //First check if theres a progrmme eaiting for input
-			this.inputCallback(getParametersFromString(fullCommand));
-		}else{
-			this.commandQueue.push(fullCommand);
-			if(typeof this.currentCommand === "undefined" ){
-				execute.call(this);
-			}
-		}
+        if(typeof function () {} === typeof this.inputCallback){ //First check if theres a progrmme eaiting for input
+                this.inputCallback(getParametersFromString(fullCommand));
+        }else{
+                this.commandQueue.push(fullCommand);
+                if(typeof this.currentCommand === "undefined" ){
+                        execute.call(this);
+                }
+        }
     };
 	
 	function getParametersFromString(command){
